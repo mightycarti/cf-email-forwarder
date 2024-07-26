@@ -28,7 +28,7 @@ npm i -g wrangler
 
 Clone the repository to your local machine:
 ~~~bash
-git clone git@github.com:mightycarti/cf-email-forwarder
+git clone git@github.com:mightycarti/cf-email-forwarder.git
 ~~~
 
 ### Install Dependencies
