@@ -7,8 +7,8 @@ describe('MessageParser Tests', () => {
 
     test('convertToEML should convert email stream to EML string', async () => {
         const result = await convertToEML(sampleEmail.raw)
-        expect(result).toContain('From: user@example.com')
-        expect(result).toContain('Subject: Test Email')
+        expect(result).toContain('From: sender@example.com')
+        expect(result).toContain('Subject: Foo is not bar')
     })
 
     test('covertToJSON should convert email stream to JSON string', async () => {
@@ -16,6 +16,6 @@ describe('MessageParser Tests', () => {
         const parsedResult = JSON.parse(result)
         expect(parsedResult).toHaveProperty('headers')
         expect(parsedResult.headers).toHaveProperty('from')
-        expect(parsedResult.headers.from).toBe('user@example.com')
+        expect(parsedResult.headers.from).toBe('sender@example.com')
     })
 })
