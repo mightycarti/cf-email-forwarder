@@ -1,29 +1,38 @@
-/**
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.toml`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- */
-
 import { convertToEML, covertToJSON } from "./MessageParser";
 import { sendWebhook } from "./Webhook";
+import { ForwardableEmailMessage, Headers } from '@cloudflare/workers-types'
 
 export default {
-	async email(message, env, ctx): Promise<any> {
-		const emailStream = message.raw
-		const dataEML = await convertToEML(emailStream)
-		const dataJSON = await covertToJSON(emailStream)
+    /**
+     * Handles incoming email messages, converts them to EML and JSON, and forwards them via webhook.
+     * @param message - The incoming email message.
+     * @param env - Environment bindings.
+     * @param ctx - Execution context.
+     * @returns A promise resolving to any result.
+     */
+    async email(message: ForwardableEmailMessage): Promise<any> {
+        const emailStream = message.raw;
+        const webhookUrl = '<WEBHOOK_URL>';
 
-		const webhookUrl = '<WEBHOOK_URL>';
-		
-		const sendEML = await sendWebhook(webhookUrl, dataEML)
-		if (sendEML.ok) console.log('Email EML forwarded successfully')
-		else console.error('Failed to forward email', sendEML.statusText)
+        try {
+            const dataEML = await convertToEML(emailStream);
+            const sendEML = await sendWebhook(webhookUrl, dataEML);
+            if (sendEML.ok) {
+                console.log('Email EML forwarded successfully');
+            } else {
+                console.error('Failed to forward email EML', sendEML.statusText);
+            }
 
-		const sendJSON = await sendWebhook(webhookUrl, dataJSON)
-		if (sendJSON.ok) console.log('Email EML forwarded successfully')
-		else console.error('Failed to forward email', sendJSON.statusText)
-	}
+            const dataJSON = await covertToJSON(emailStream);
+            const sendJSON = await sendWebhook(webhookUrl, dataJSON);
+            if (sendJSON.ok) {
+                console.log('Email JSON forwarded successfully');
+            } else {
+                console.error('Failed to forward email JSON', sendJSON.statusText);
+            }
+        } catch (error) {
+            console.error("Error processing email:", error);
+            throw new Error("Failed to process and forward email");
+        }
+    }
 } satisfies ExportedHandler<Env>;
